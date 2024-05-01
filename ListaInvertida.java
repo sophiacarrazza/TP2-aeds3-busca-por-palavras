@@ -177,6 +177,27 @@ public class ListaInvertida {
     arqBlocos = new RandomAccessFile(nomeArquivoBlocos, "rw");
   }
 
+  public static boolean isStopWord(String word) throws Exception {
+    RandomAccessFile arq = new RandomAccessFile("dados/stopwords.txt", "rw");
+    String stopWord;
+
+    while ((stopWord = arq.readLine()) != null) {
+      int tam = stopWord.length();
+      // se a palavra tiver espaco no final (um problema do arquivo.txt), remove ele
+      while (tam > 0 && stopWord.charAt(tam - 1) == ' ') {
+        stopWord = stopWord.substring(0, tam - 1);
+        tam = stopWord.length(); // atualiza o valor de tam
+      }
+      System.out.println(stopWord + " - ");
+      if (stopWord.compareTo(word) == 0) {
+        arq.close();
+        return true;
+      }
+    }
+    arq.close();
+    return false;
+  }
+
   // Insere um dado na lista da chave de forma NÃO ORDENADA
   public boolean create(String c, int d) throws Exception {
 
@@ -201,56 +222,65 @@ public class ListaInvertida {
         break;
       }
     }
+    // separa a chave em varias chaves de suas palavras com o mesmo endereco de
+    // bloco
+    String[] palavras = c.split(" ");
+    for (int i = 0; i < palavras.length; i++) {
+      if (!isStopWord(palavras[i])) {
 
-    // Se não encontrou, cria um novo bloco para essa chave
-    if (!jaExiste) {
-      // Cria um novo bloco
-      Bloco b = new Bloco(quantidadeDadosPorBloco);
-      endereco = arqBlocos.length();
-      arqBlocos.seek(endereco);
-      arqBlocos.write(b.toByteArray());
+        // Se não encontrou, cria um novo bloco para as palavras
+        if (!jaExiste) {
+          // Cria um novo bloco
+          Bloco b = new Bloco(quantidadeDadosPorBloco);
+          endereco = arqBlocos.length();
+          arqBlocos.seek(endereco);
+          arqBlocos.write(b.toByteArray());
 
-      // Insere a nova chave no dicionário
-      arqDicionario.seek(arqDicionario.length());
-      arqDicionario.writeUTF(c);
-      arqDicionario.writeLong(endereco);
-    }
-
-    // Cria um laço para percorrer todos os blocos encadeados nesse endereço
-    Bloco b = new Bloco(quantidadeDadosPorBloco);
-    byte[] bd;
-    while (endereco != -1) {
-      long proximo = -1;
-
-      // Carrega o bloco
-      arqBlocos.seek(endereco);
-      bd = new byte[b.size()];
-      arqBlocos.read(bd);
-      b.fromByteArray(bd);
-
-      // Testa se o dado cabe nesse bloco
-      if (!b.full()) {
-        b.create(d);
-      } else {
-        // Avança para o próximo bloco
-        proximo = b.next();
-        if (proximo == -1) {
-          // Se não existir um novo bloco, cria esse novo bloco
-          Bloco b1 = new Bloco(quantidadeDadosPorBloco);
-          proximo = arqBlocos.length();
-          arqBlocos.seek(proximo);
-          arqBlocos.write(b1.toByteArray());
-
-          // Atualiza o ponteiro do bloco anterior
-          b.setNext(proximo);
+          // Insere a nova chave no dicionário
+          arqDicionario.seek(arqDicionario.length());
+          arqDicionario.writeUTF(palavras[i]);
+          arqDicionario.writeLong(endereco);
         }
-      }
 
-      // Atualiza o bloco atual
-      arqBlocos.seek(endereco);
-      arqBlocos.write(b.toByteArray());
-      endereco = proximo;
+        // Cria um laço para percorrer todos os blocos encadeados nesse endereço
+        Bloco b1 = new Bloco(quantidadeDadosPorBloco);
+        byte[] bd;
+        while (endereco != -1) {
+          long proximo = -1;
+
+          // Carrega o bloco
+          arqBlocos.seek(endereco);
+          bd = new byte[b1.size()];
+          arqBlocos.read(bd);
+          b1.fromByteArray(bd);
+
+          // Testa se o dado cabe nesse bloco
+          if (!b1.full()) {
+            b1.create(d);
+          } else {
+            // Avança para o próximo bloco
+            proximo = b1.next();
+            if (proximo == -1) {
+              // Se não existir um novo bloco, cria esse novo bloco
+              Bloco b2 = new Bloco(quantidadeDadosPorBloco);
+              proximo = arqBlocos.length();
+              arqBlocos.seek(proximo);
+              arqBlocos.write(b2.toByteArray());
+
+              // Atualiza o ponteiro do bloco anterior
+              b1.setNext(proximo);
+            }
+          }
+
+          // Atualiza o bloco atual
+          arqBlocos.seek(endereco);
+          arqBlocos.write(b1.toByteArray());
+          endereco = proximo;
+        }
+
+      }
     }
+
     return true;
   }
 
