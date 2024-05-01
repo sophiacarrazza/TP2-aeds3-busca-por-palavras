@@ -177,6 +177,7 @@ public class ListaInvertida {
     arqBlocos = new RandomAccessFile(nomeArquivoBlocos, "rw");
   }
 
+  // Verifica se a palavra é uma stopword
   public static boolean isStopWord(String word) throws Exception {
     RandomAccessFile arq = new RandomAccessFile("dados/stopwords.txt", "rw");
     String stopWord;
@@ -188,7 +189,6 @@ public class ListaInvertida {
         stopWord = stopWord.substring(0, tam - 1);
         tam = stopWord.length(); // atualiza o valor de tam
       }
-      System.out.println(stopWord + " - ");
       if (stopWord.compareTo(word) == 0) {
         arq.close();
         return true;
@@ -196,6 +196,14 @@ public class ListaInvertida {
     }
     arq.close();
     return false;
+  }
+
+  // funcao para tirar os acentos de uma String
+  public static String removeAcentos(String str) {
+    return str.replaceAll("[ãâáàä]", "a").replaceAll("[êéèë]", "e").replaceAll("[îíìï]", "i").replaceAll("[õôóòö]", "o")
+        .replaceAll("[ûúùü]", "u").replaceAll("[ÃÂÁÀÄ]", "A").replaceAll("[ÊÉÈË]", "E").replaceAll("[ÎÍÌÏ]", "I")
+        .replaceAll("[ÕÔÓÒÖ]", "O").replaceAll("[ÛÚÙÜ]", "U").replace('ç', 'c').replace('Ç', 'C').replace('ñ', 'n')
+        .replace('Ñ', 'N');
   }
 
   // Insere um dado na lista da chave de forma NÃO ORDENADA
@@ -227,7 +235,7 @@ public class ListaInvertida {
     String[] palavras = c.split(" ");
     for (int i = 0; i < palavras.length; i++) {
       if (!isStopWord(palavras[i])) {
-
+        palavras[i] = removeAcentos(palavras[i]);
         // Se não encontrou, cria um novo bloco para as palavras
         if (!jaExiste) {
           // Cria um novo bloco
