@@ -10,7 +10,7 @@ palavra, uma lista de livros que contém essa palavra. A lista de livros é uma 
 
 ### 2. Dificuldades ###  
 
-Tivemos dificuldade ao implementar o método read e o método removeAcentos corretamente. Porém, conseguimos resolver esses problemas com a ajuda dos outros colegas de sala.
+Tivemos dificuldades ao implementar os métodos read e removeAcentos, mas conseguimos resolver com a colaboração dos colegas de sala. Durante o processo, notamos uma peculiaridade no funcionamento do método removeAcentos, que variava de máquina para máquina. Em algumas, observamos a adição de uma interrogação nas palavras com acentos, pois eram removidos antes de chegarem ao método. No entanto, em outras máquinas, o método removeAcentos operava corretamente.
 
 ### 3. Classes e Métodos ###  
 - ListaInvertida:
