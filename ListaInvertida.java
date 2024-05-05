@@ -346,38 +346,10 @@ public class ListaInvertida {
   // titulo de livro) com novas chaves dado um titulo de livro
   public boolean update(String c, int d, String nc) throws Exception {
 
-    // Percorre toda a lista testando se já não existe
-    // o dado associado a essa chave
-    int[] lista = read(nc);
-    for (int i = 0; i < lista.length; i++)
-      if (lista[i] == d)
-        return false;
-
-    // separa a chave em varias chaves de suas palavras com o mesmo endereco de
-    // bloco
-    String[] palavras = nc.split(" ");
-    for (int i = 0; i < palavras.length; i++) {
-      if (!isStopWord(palavras[i])) {
-        palavras[i] = removeAcentos(palavras[i]);
-
-        // for que percorre cada palavra chave do titulo original e compara as
-        // diferentes palavras do titulo novo
-        // para ver se a palavra chave do titulo original é diferente da palavra chave
-        // do titulo novo
-        // se for diferente, ele deleta a palavra chave do titulo original e insere a
-        // palavra chave do titulo novo
-        for (int j = 0; j < palavras.length; j++) {
-          if (!isStopWord(palavras[j])) {
-            palavras[j] = removeAcentos(palavras[j]);
-            if (palavras[i].compareTo(palavras[j]) != 0) {
-              delete(palavras[i], d);
-              create(palavras[j], d);
-            }
-          }
-        }
-      }
-    }
+    delete(c, d);
+    create(nc, d);
     return true;
+
   }
 
   // Remove o dado de uma chave (mas não apaga a chave nem apaga blocos)
