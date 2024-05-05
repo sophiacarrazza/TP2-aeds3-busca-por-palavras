@@ -385,47 +385,47 @@ public class ListaInvertida {
 
     String chave = "";
     long endereco = -1;
-    boolean jaExiste = false;
 
-    // localiza a chave no dicionário
-    arqDicionario.seek(0);
-    while (arqDicionario.getFilePointer() != arqDicionario.length()) {
-      chave = arqDicionario.readUTF();
-      endereco = arqDicionario.readLong();
-      if (chave.compareTo(c) == 0) {
-        jaExiste = true;
-        break;
+    // separa a chave em varias chaves de suas palavras com o mesmo endereco de
+    // bloco
+    String[] palavras = c.split(" ");
+    for (int i = 0; i < palavras.length; i++) {
+      // localiza a chave no dicionário
+      arqDicionario.seek(0);
+      while (arqDicionario.getFilePointer() != arqDicionario.length()) {
+        chave = arqDicionario.readUTF();
+        endereco = arqDicionario.readLong();
+        if (chave.compareTo(palavras[i]) == 0) {
+          // ja existe
+          if (!isStopWord(palavras[i])) {
+            palavras[i] = removeAcentos(palavras[i]);
+            // Cria um laço para percorrer todos os blocos encadeados nesse endereço
+            Bloco b = new Bloco(quantidadeDadosPorBloco);
+            byte[] bd;
+            while (endereco != -1) {
+
+              // Carrega o bloco
+              arqBlocos.seek(endereco);
+              bd = new byte[b.size()];
+              arqBlocos.read(bd);
+              b.fromByteArray(bd);
+
+              // Testa se o valor está neste bloco e sai do laço
+              if (b.test(d)) {
+                b.delete(d);
+                arqBlocos.seek(endereco);
+                arqBlocos.write(b.toByteArray());
+
+              }
+              // Avança para o próximo bloco
+              endereco = b.next();
+            }
+          }
+        }
       }
     }
-    if (!jaExiste)
-      return false;
-
-    // Cria um laço para percorrer todos os blocos encadeados nesse endereço
-    Bloco b = new Bloco(quantidadeDadosPorBloco);
-    byte[] bd;
-    while (endereco != -1) {
-
-      // Carrega o bloco
-      arqBlocos.seek(endereco);
-      bd = new byte[b.size()];
-      arqBlocos.read(bd);
-      b.fromByteArray(bd);
-
-      // Testa se o valor está neste bloco e sai do laço
-      if (b.test(d)) {
-        b.delete(d);
-        arqBlocos.seek(endereco);
-        arqBlocos.write(b.toByteArray());
-        return true;
-      }
-
-      // Avança para o próximo bloco
-      endereco = b.next();
-    }
-
-    // chave não encontrada
-    return false;
-
+    // Se cada palavra deletada foi deletada com sucesso, retorna true
+    return true;
   }
 
   public void print() throws Exception {
