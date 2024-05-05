@@ -20,7 +20,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.text.Normalizer;
 import java.util.ArrayList;
 
 public class ListaInvertida {
@@ -199,13 +198,18 @@ public class ListaInvertida {
     return false;
   }
 
-  // funcao para tirar os acentos de uma String
-  public static String removeAcentos(String input) {
-    if (input == null) {
-      return null;
-    }
-    String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
-    return normalized.replaceAll("\\p{M}", "");
+  // Função que troca os acentos por caracteres normais de uma String
+  public static String removeAcentos(String palavra) {
+    palavra = palavra.toLowerCase();
+    // remover caracteres especiais e replace acentos pelo caracter normal
+    palavra = palavra.replaceAll("[áàâã]", "a");
+    palavra = palavra.replaceAll("[éèêë]", "e");
+    palavra = palavra.replaceAll("[íìîï]", "i");
+    palavra = palavra.replaceAll("[óòôöõ]", "o");
+    palavra = palavra.replaceAll("[úùûüũ]", "u");
+    palavra = palavra.replaceAll("[ç]", "c");
+    palavra = palavra.replaceAll("[^a-zA-Z0-9]", "");
+    return palavra;
   }
 
   // Insere um dado na lista da chave de forma NÃO ORDENADA
