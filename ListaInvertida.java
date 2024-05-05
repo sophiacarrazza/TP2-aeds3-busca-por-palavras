@@ -20,6 +20,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.text.Normalizer;
 import java.util.ArrayList;
 
 public class ListaInvertida {
@@ -199,11 +200,12 @@ public class ListaInvertida {
   }
 
   // funcao para tirar os acentos de uma String
-  public static String removeAcentos(String str) {
-    return str.replaceAll("[ãâáàä]", "a").replaceAll("[êéèë]", "e").replaceAll("[îíìï]", "i").replaceAll("[õôóòö]", "o")
-        .replaceAll("[ûúùü]", "u").replaceAll("[ÃÂÁÀÄ]", "A").replaceAll("[ÊÉÈË]", "E").replaceAll("[ÎÍÌÏ]", "I")
-        .replaceAll("[ÕÔÓÒÖ]", "O").replaceAll("[ÛÚÙÜ]", "U").replace('ç', 'c').replace('Ç', 'C').replace('ñ', 'n')
-        .replace('Ñ', 'N');
+  public static String removeAcentos(String input) {
+    if (input == null) {
+      return null;
+    }
+    String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+    return normalized.replaceAll("\\p{M}", "");
   }
 
   // Insere um dado na lista da chave de forma NÃO ORDENADA
@@ -224,6 +226,7 @@ public class ListaInvertida {
     // bloco
     String[] palavras = c.split(" ");
     for (int i = 0; i < palavras.length; i++) {
+      jaExiste = false;
       // localiza a chave no dicionário
       arqDicionario.seek(0);
       while (arqDicionario.getFilePointer() != arqDicionario.length()) {
@@ -291,55 +294,67 @@ public class ListaInvertida {
     return true;
   }
 
-  // Retorna a lista de dados de uma determinada chave
   public int[] read(String c) throws Exception {
+    // Separar a frase em palavras
+    String[] palavras = c.split(" ");
+    // Lista para armazenar os conjuntos de dados correspondentes a cada palavra
+    ArrayList<ArrayList<Integer>> conjuntosDados = new ArrayList<>();
 
-    ArrayList<Integer> lista = new ArrayList<>();
-
-    String chave = "";
-    long endereco = -1;
-    boolean jaExiste = false;
-
-    // localiza a chave no dicionário
-    arqDicionario.seek(0);
-    while (arqDicionario.getFilePointer() != arqDicionario.length()) {
-      chave = arqDicionario.readUTF();
-      endereco = arqDicionario.readLong();
-      if (chave.compareTo(c) == 0) {
-        jaExiste = true;
-        break;
+    // Para cada palavra na frase
+    for (String palavra : palavras) {
+      if (!isStopWord(palavra)) {
+        palavra = removeAcentos(palavra);
+        // Buscar o bloco correspondente a esta palavra
+        arqDicionario.seek(0);
+        while (arqDicionario.getFilePointer() != arqDicionario.length()) {
+          String chave = arqDicionario.readUTF();
+          long endereco = arqDicionario.readLong();
+          // Se a palavra existe no dicionário
+          if (chave.compareTo(palavra) == 0) {
+            // Criar um conjunto de dados para armazenar os valores deste bloco
+            ArrayList<Integer> conjuntoDados = new ArrayList<>();
+            Bloco b = new Bloco(quantidadeDadosPorBloco);
+            byte[] bd;
+            // Percorrer todos os blocos encadeados
+            while (endereco != -1) {
+              arqBlocos.seek(endereco);
+              bd = new byte[b.size()];
+              arqBlocos.read(bd);
+              b.fromByteArray(bd);
+              // Adicionar os dados deste bloco ao conjunto
+              int[] dadosBloco = b.list();
+              for (int dado : dadosBloco)
+                conjuntoDados.add(dado);
+              // Avançar para o próximo bloco
+              endereco = b.next();
+            }
+            // Adicionar o conjunto de dados desta palavra à lista
+            conjuntosDados.add(conjuntoDados);
+            break; // Parar de procurar esta palavra no dicionário
+          }
+        }
       }
     }
-    if (!jaExiste)
+
+    // Olha a interseção dos conjuntos de dados
+    if (conjuntosDados.isEmpty()) {
+      // Se nenhuma palavra foi encontrada, retornar um array vazio
       return new int[0];
-
-    // Cria um laço para percorrer todos os blocos encadeados nesse endereço
-    Bloco b = new Bloco(quantidadeDadosPorBloco);
-    byte[] bd;
-    while (endereco != -1) {
-
-      // Carrega o bloco
-      arqBlocos.seek(endereco);
-      bd = new byte[b.size()];
-      arqBlocos.read(bd);
-      b.fromByteArray(bd);
-
-      // Acrescenta cada valor à lista
-      int[] lb = b.list();
-      for (int i = 0; i < lb.length; i++)
-        lista.add(lb[i]);
-
-      // Avança para o próximo bloco
-      endereco = b.next();
-
+    } else {
+      // Inicializa o conjunto de dados resultante com os dados da primeira palavra
+      ArrayList<Integer> dadosIntersecao = new ArrayList<>(conjuntosDados.get(0));
+      // Para cada conjunto de dados correspondente a cada palavra
+      for (int i = 1; i < conjuntosDados.size(); i++) {
+        // Calcula a interseção com o conjunto de dados atual
+        dadosIntersecao.retainAll(conjuntosDados.get(i));
+      }
+      // Converter o conjunto de dados para um array de inteiros
+      int[] resultado = new int[dadosIntersecao.size()];
+      for (int i = 0; i < dadosIntersecao.size(); i++) {
+        resultado[i] = dadosIntersecao.get(i);
+      }
+      return resultado;
     }
-
-    // Constrói o vetor de respostas
-    lista.sort(null);
-    int[] resposta = new int[lista.size()];
-    for (int j = 0; j < lista.size(); j++)
-      resposta[j] = (int) lista.get(j);
-    return resposta;
   }
 
   // Função update que atualiza cada chave (cada palavra) de um dado(um
