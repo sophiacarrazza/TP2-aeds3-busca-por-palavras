@@ -24,6 +24,7 @@ public class Main {
         System.out.println("2 - Buscar");
         System.out.println("3 - Excluir");
         System.out.println("4 - Imprimir");
+        System.out.println("5 - Alterar");
         System.out.println("0 - Sair");
         try {
           opcao = Integer.valueOf(console.nextLine());
@@ -62,7 +63,20 @@ public class Main {
             lista.print();
           }
             break;
+
           case 4: {
+            lista.print();
+          }
+            break;
+          case 5: {
+            System.out.println("\nALTERAÇÃO");
+            System.out.print("Chave: ");
+            String chave = console.nextLine();
+            System.out.print("Dado: ");
+            int dado = Integer.valueOf(console.nextLine());
+            System.out.print("Nova Chave: ");
+            String novaChave = console.nextLine();
+            lista.update(chave, dado, novaChave);
             lista.print();
           }
             break;

@@ -220,24 +220,23 @@ public class ListaInvertida {
     long endereco = -1;
     boolean jaExiste = false;
 
-    // localiza a chave no dicionário
-    arqDicionario.seek(0);
-    while (arqDicionario.getFilePointer() != arqDicionario.length()) {
-      chave = arqDicionario.readUTF();
-      endereco = arqDicionario.readLong();
-      if (chave.compareTo(c) == 0) {
-        jaExiste = true;
-        break;
-      }
-    }
     // separa a chave em varias chaves de suas palavras com o mesmo endereco de
     // bloco
     String[] palavras = c.split(" ");
     for (int i = 0; i < palavras.length; i++) {
+      // localiza a chave no dicionário
+      arqDicionario.seek(0);
+      while (arqDicionario.getFilePointer() != arqDicionario.length()) {
+        chave = arqDicionario.readUTF();
+        endereco = arqDicionario.readLong();
+        if (chave.compareTo(palavras[i]) == 0) {
+          jaExiste = true;
+          break;
+        }
+      }
       if (!isStopWord(palavras[i])) {
         palavras[i] = removeAcentos(palavras[i]);
-        // Se não encontrou, cria um novo bloco para as palavras
-        if (!jaExiste) {
+        if (!jaExiste) { // Se não encontrou, cria um novo bloco para as palavras
           // Cria um novo bloco
           Bloco b = new Bloco(quantidadeDadosPorBloco);
           endereco = arqBlocos.length();
@@ -341,6 +340,44 @@ public class ListaInvertida {
     for (int j = 0; j < lista.size(); j++)
       resposta[j] = (int) lista.get(j);
     return resposta;
+  }
+
+  // Função update que atualiza cada chave (cada palavra) de um dado(um
+  // titulo de livro) com novas chaves dado um titulo de livro
+  public boolean update(String c, int d, String nc) throws Exception {
+
+    // Percorre toda a lista testando se já não existe
+    // o dado associado a essa chave
+    int[] lista = read(nc);
+    for (int i = 0; i < lista.length; i++)
+      if (lista[i] == d)
+        return false;
+
+    // separa a chave em varias chaves de suas palavras com o mesmo endereco de
+    // bloco
+    String[] palavras = nc.split(" ");
+    for (int i = 0; i < palavras.length; i++) {
+      if (!isStopWord(palavras[i])) {
+        palavras[i] = removeAcentos(palavras[i]);
+
+        // for que percorre cada palavra chave do titulo original e compara as
+        // diferentes palavras do titulo novo
+        // para ver se a palavra chave do titulo original é diferente da palavra chave
+        // do titulo novo
+        // se for diferente, ele deleta a palavra chave do titulo original e insere a
+        // palavra chave do titulo novo
+        for (int j = 0; j < palavras.length; j++) {
+          if (!isStopWord(palavras[j])) {
+            palavras[j] = removeAcentos(palavras[j]);
+            if (palavras[i].compareTo(palavras[j]) != 0) {
+              delete(palavras[i], d);
+              create(palavras[j], d);
+            }
+          }
+        }
+      }
+    }
+    return true;
   }
 
   // Remove o dado de uma chave (mas não apaga a chave nem apaga blocos)

@@ -58,12 +58,36 @@ class teste {
     return palavra;
   }
 
+  public static String substituirAcentos(String texto) {
+    // Remove os acentos usando a classe Normalizer
+    String textoSemAcentos = Normalizer.normalize(texto, Normalizer.Form.NFD)
+        .replaceAll("\\p{M}", "");
+    // Substitui caracteres acentuados específicos por seus equivalentes sem acento
+    textoSemAcentos = textoSemAcentos.replaceAll("[áàâã]", "a")
+        .replaceAll("[éèê]", "e")
+        .replaceAll("[íìî]", "i")
+        .replaceAll("[óòôõ]", "o")
+        .replaceAll("[úùû]", "u")
+        .replaceAll("[ÁÀÂÃ]", "A")
+        .replaceAll("[ÉÈÊ]", "E")
+        .replaceAll("[ÍÌÎ]", "I")
+        .replaceAll("[ÓÒÔÕ]", "O")
+        .replaceAll("[ÚÙÛ]", "U")
+        .replaceAll("[ç]", "c")
+        .replaceAll("[Ç]", "C")
+        .replaceAll("[ñ]", "n")
+        .replaceAll("[Ñ]", "N");
+    return textoSemAcentos;
+  }
+
   public static void main(String[] args) {
-    Scanner scanner = new Scanner(System.in);
+    Scanner scanner = new Scanner(System.in, "UTF-8");
+
     System.out.println("Digite a palavra que deseja verificar se é stopword: ");
     String palavra = scanner.nextLine();
     System.out.println("Palavra digitada: " + palavra);
-    palavra = removerAcentos2(palavra);
+    palavra = removerAcentos(palavra);
+    // palavra = palavra.normalize(texto, Normalizer.Form.NFD);
     System.out.println("Palavra sem acentos: " + palavra);
     try {
       if (isStopWord(palavra)) {
