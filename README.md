@@ -8,8 +8,11 @@ Segundo trabalho prático da disciplina de Algoritmos e Estruturas de Dados III
 O trabalho consiste em implementar um sistema de busca por palavras em uma lista. Para isso, foi utilizado uma lista invertida, que é uma estrutura de dados que armazena, para cada
 palavra, uma lista de livros que contém essa palavra. A lista de livros é uma lista encadeada, onde cada termo possui um título e um identificador. A lista invertida é uma árvore AVL, onde cada nó possui uma palavra e uma lista.
 
-### 2. Classes e Métodos ###  
+### 2. Dificuldades ###  
 
+Tivemos dificuldade ao implementar o método read e o método removeAcentos corretamente. Porém, conseguimos resolver esses problemas com a ajuda dos outros colegas de sala.
+
+### 3. Classes e Métodos ###  
 - ListaInvertida:
   - ```java
     public class ListaInvertida
@@ -34,7 +37,7 @@ palavra, uma lista de livros que contém essa palavra. A lista de livros é uma 
     
     main(String[] args): Este método é o método principal do programa, onde é feita a leitura dos arquivos de entrada e a execução das operações de inclusão, alteração, remoção e busca de livros.
 
-### 3. Checklist ###
+### 4. Checklist ###
 
 - A inclusão de um livro acrescenta os termos do seu título à lista invertida? Sim, a inclusão de um livro acrescenta os termos do seu título à lista invertida.
 - A alteração de um livro modifica a lista invertida removendo ou acrescentando termos do título? Sim, a alteração de um livro modifica a lista invertida removendo e acrescentando termos do título.
